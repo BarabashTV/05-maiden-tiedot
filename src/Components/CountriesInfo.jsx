@@ -1,6 +1,12 @@
 import React from "react";
 
-const CountriesInfo = ({ country }) => {
+const CountriesInfo = ({
+  country,
+  temp,
+  weatherEmoji,
+  weatherDescription,
+  windSpeed,
+}) => {
   return (
     <div>
       <h2>{country.name.common}</h2>
@@ -17,6 +23,13 @@ const CountriesInfo = ({ country }) => {
         alt={`Flag of ${country.name.common}`}
         width="200"
       />
+      <div>
+        <h3>Weather in {country.capital[0]}</h3>
+        <p>Temperature: {temp}°C</p>
+        <img src={weatherEmoji} alt="weather icon" />
+        <p>{weatherDescription}</p>
+        <p>Wind speed: {windSpeed} m/s</p>
+      </div>
     </div>
   );
 };

@@ -11,6 +11,13 @@ const App = () => {
   const [error, setError] = useState(null);
   const [isSearching, setIsSearching] = useState(false);
 
+  const [temp, setTemp] = useState(null);
+  const [weatherEmoji, setWeatherEmoji] = useState(null);
+  const [weatherDescription, setWeatherDescription] = useState(null);
+  const [windSpeed, setWindSpeed] = useState(null);
+
+  const apiKey = import.meta.env.VITE_WEATHER_API_KEY;
+
   useEffect(() => {
     axios
       .get("https://studies.cs.helsinki.fi/restcountries/api/all")
@@ -34,6 +41,32 @@ const App = () => {
     country.name.common.toLowerCase().includes(searchCountry.toLowerCase())
   );
 
+  useEffect(() => {
+    if (filteredCountries.length === 1) {
+      setSelectedCountry(filteredCountries[0]);
+      const capital = filteredCountries[0].capital[0];
+
+      axios
+        .get(
+          `https://api.openweathermap.org/data/2.5/weather?q=${capital}&appid=${apiKey}&units=metric`
+        )
+        .then((response) => {
+          setTemp(response.data.main.temp.toFixed(1));
+          setWeatherEmoji(
+            `https://openweathermap.org/img/wn/${response.data.weather[0].icon}.png`
+          );
+          setWeatherDescription(
+            response.data.weather[0].description.charAt(0).toUpperCase() +
+              response.data.weather[0].description.slice(1)
+          );
+          setWindSpeed(response.data.wind.speed);
+        })
+        .catch((error) => {
+          console.log("Error fetching weather data:", error);
+        });
+    }
+  }, [filteredCountries, apiKey]);
+
   const errorMessage = () => {
     if (!isSearching) return null;
     if (error) return <p>{error}</p>;
@@ -54,18 +87,22 @@ const App = () => {
         errorMessage={errorMessage}
       />
 
-      {filteredCountries.length <= 10 && filteredCountries.length > 1 && (
+      {filteredCountries.length === 1 && (
+        <CountriesInfo
+          country={filteredCountries[0]}
+          temp={temp}
+          weatherEmoji={weatherEmoji}
+          weatherDescription={weatherDescription}
+          windSpeed={windSpeed}
+        />
+      )}
+
+      {filteredCountries.length > 1 && filteredCountries.length <= 10 && (
         <Countries
           countries={filteredCountries}
           onSelect={setSelectedCountry}
         />
       )}
-
-      {filteredCountries.length === 1 && (
-        <CountriesInfo country={filteredCountries[0]} />
-      )}
-
-      {selectedCountry && <CountriesInfo country={selectedCountry} />}
     </div>
   );
 };
